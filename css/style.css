@@ -767,3 +767,6 @@ textarea.input { min-height: 96px; resize: vertical; }
 .notfound h1 { font-size: var(--fs-h2); margin: var(--sp-3) 0 var(--sp-4); }
 .notfound p { color: var(--c-text-2); max-width: 440px; margin: 0 auto var(--sp-6); }
 .notfound .hero__actions { justify-content: center; }
+
+/* Поле-ловушка для спам-ботов: людям не видно, боты заполняют */
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }

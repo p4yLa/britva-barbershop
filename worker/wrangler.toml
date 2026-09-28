@@ -1,0 +1,4 @@
+# Настройки Cloudflare Worker. Секреты сюда НЕ пишем — только через `wrangler secret put`.
+name = "britva-booking"
+main = "index.js"
+compatibility_date = "2026-09-01"

@@ -9,6 +9,34 @@
   var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // Адрес Cloudflare Worker, который пересылает заявки в Telegram (см. worker/).
+  // Пустая строка — демо-режим: заявки никуда не уходят.
+  var LEAD_ENDPOINT = 'https://britva-booking.p4yla.workers.dev';
+
+  // Отправка заявки. Кнопка блокируется, пока идёт запрос; при ошибке — текст в errorEl.
+  function sendLead(form, data, button, errorEl) {
+    var trap = form.querySelector('[name="website"]');
+    data.website = trap ? trap.value : '';
+    if (!LEAD_ENDPOINT) return Promise.resolve();
+    var label = button.innerHTML;
+    button.disabled = true;
+    button.textContent = 'Отправляем…';
+    errorEl.textContent = '';
+    return fetch(LEAD_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+    }).catch(function (err) {
+      errorEl.textContent = 'Не получилось отправить заявку. Проверьте интернет или позвоните: +7 (495) 128-47-30.';
+      throw err;
+    }).finally(function () {
+      button.disabled = false;
+      button.innerHTML = label;
+    });
+  }
+
   /* ---------- Утилиты форматирования ---------- */
 
   // 2600 -> «2 600 ₽» (неразрывный пробел, чтобы цена не разрывалась на две строки)
@@ -444,9 +472,24 @@
       e.preventDefault();
       if (state.step !== 4) { btnNext.click(); return; }
       if (!validateAll(steps[3])) return;
-      // Демо: данные никуда не отправляются. Для Netlify Forms см. README.
       var name = $('#b-name').value.trim();
       var phone = $('#b-phone').value;
+      sendLead(form, {
+        type: 'booking',
+        services: selected().map(function (s) { return s.name; }).join(', '),
+        master: masterName(),
+        date: dayLabel(),
+        time: state.time,
+        duration: duration(totalDur()),
+        total: $('#sum-total').textContent,
+        name: name,
+        phone: phone,
+        comment: $('#b-comment').value,
+        consent: true
+      }, btnSubmit, errorBox).then(function () { showBookingSuccess(name, phone); }, function () {});
+    });
+
+    function showBookingSuccess(name, phone) {
       $('#booking-success-text').textContent = name + ', ждём вас ' + dayLabel() + ' в ' + state.time +
         ' на Покровке, 31. ' + (state.master === 'any' ? 'Мастера подберём и назовём при звонке. ' : 'Мастер: ' + masterName().split(' · ')[0] + '. ') +
         'Администратор позвонит на ' + phone + ' в течение 15 минут.';
@@ -454,7 +497,7 @@
       var ok = $('#booking-success');
       ok.hidden = false;
       ok.focus();
-    });
+    }
 
     /* .ics — файл события для любого календаря */
     $('#add-calendar').addEventListener('click', function () {
@@ -536,13 +579,23 @@
       e.preventDefault();
       if (!validateAll(form)) return;
       var to = toInput.value.trim();
+      sendLead(form, {
+        type: 'certificate',
+        nominal: rub(nominal),
+        recipient: to,
+        name: $('#c-name').value.trim(),
+        phone: $('#c-phone').value,
+        consent: true
+      }, $('button[type="submit"]', form), $('#cert-error')).then(function () { showCertSuccess(to); }, function () {});
+    });
+    function showCertSuccess(to) {
       $('#cert-success-text').textContent = 'Сертификат на ' + rub(nominal) + (to ? ' для получателя «' + to + '»' : '') +
         '. Перезвоним на ' + $('#c-phone').value + ' в течение 15 минут, уточним оплату и доставку.';
       $('.cert-fields', form).hidden = true;
       var ok = $('#cert-success');
       ok.hidden = false;
       ok.focus();
-    });
+    }
     $('#cert-again').addEventListener('click', function () {
       form.reset();
       $$('.field, .consent', form).forEach(function (w) { w.classList.remove('is-invalid', 'is-valid'); });

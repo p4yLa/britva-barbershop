@@ -19,7 +19,8 @@ css/style.css   переменные в начале файла, дальше mo
 js/main.js      меню, прайс, галерея, запись, сертификат, слайдер, маска, cookie
 img/            фото WebP, og.jpg, favicon.svg
 fonts/          Oswald 500/700, Onest 400/500 (woff2: кириллица, латиница, знак ₽)
-netlify.toml    404, заголовки безопасности, кэширование
+netlify.toml    на случай переезда на Netlify
+worker/         Cloudflare Worker: заявки с сайта → Telegram
 robots.txt, sitemap.xml
 ```
 
@@ -31,21 +32,30 @@ robots.txt, sitemap.xml
 - **Доступность.** Семантическая разметка, видимый фокус, `aria-live` для ошибок и шагов, учёт `prefers-reduced-motion`. Без JS весь контент остаётся видимым.
 - **Для России.** Шрифты лежат на своём сервере, без Google Fonts. Вместо iframe с картой — заглушка со ссылкой на Яндекс Карты. В `<head>` есть закомментированные места под Яндекс Метрику и Вебмастер.
 
-## Как подключить Netlify Forms
+## Куда уходят заявки
 
-1. Добавьте в тег формы атрибуты `data-netlify="true"` и `name`:
+Запись и заявка на сертификат отправляются в Telegram-бот [@BritvaMoscowBot](https://t.me/BritvaMoscowBot) через Cloudflare Worker:
 
-   ```html
-   <form class="booking" id="booking-form" name="booking" data-netlify="true" novalidate>
-   ```
+```
+сайт (GitHub Pages) → https://britva-booking.p4yla.workers.dev → Telegram → чат администратора
+```
 
-2. В `js/main.js` в обработчике `submit` (рядом с комментарием «Демо: данные никуда не отправляются») добавьте одну строку:
+Зачем посредник: токен бота нельзя класть в `main.js`, его увидит любой посетитель. Worker хранит токен в секретах Cloudflare.
 
-   ```js
-   fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(new FormData(form)).toString() + '&form-name=booking' });
-   ```
+- Код функции: `worker/index.js`. Она проверяет имя, телефон и согласие, пускает заявки только с домена сайта, отсеивает спам-ботов полем-ловушкой и ограничивает число заявок: не больше 5 с одного IP за 10 минут.
+- Адрес функции задаётся в `js/main.js` в переменной `LEAD_ENDPOINT`. Пустая строка — демо-режим, заявки никуда не уходят.
+- Если отправка не удалась, посетитель видит ошибку с номером телефона, а не ложный экран успеха.
 
-Для формы сертификата то же самое, только `name="certificate"`. Заявки появятся в панели Netlify → Forms.
+Обновить функцию или секреты:
+
+```
+cd worker
+npx wrangler deploy
+npx wrangler secret put BOT_TOKEN   # токен от @BotFather
+npx wrangler secret put CHAT_ID     # ID чата, куда слать заявки
+```
+
+Новый домен сайта нужно добавить в `ALLOWED_ORIGINS` в `worker/index.js`.
 
 ## Перед запуском настоящего сайта
 
