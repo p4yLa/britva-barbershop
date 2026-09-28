@@ -18,7 +18,7 @@ privacy.html    политика обработки ПДн (шаблон)
 css/style.css   переменные в начале файла, дальше mobile-first
 js/main.js      меню, прайс, галерея, запись, сертификат, слайдер, маска, cookie
 img/            фото WebP, og.jpg, favicon.svg
-fonts/          Oswald 500/700, Onest 400/500 (woff2: кириллица, латиница, знак ₽)
+fonts/          oswald.woff2, onest.woff2 — вариативные, только символы сайта (44 КБ на оба)
 netlify.toml    на случай переезда на Netlify
 worker/         Cloudflare Worker: расписание (D1), запись, заявки в Telegram
 robots.txt, sitemap.xml
@@ -98,4 +98,33 @@ npx wrangler d1 execute britva --remote --command "SELECT * FROM bookings ORDER 
 | work-8 | Arthur Humeau | Twd3yaqA2NM |
 | work-9 | Allef Vinicius | IvQeAVeJULw |
 
-Шрифты Oswald и Onest распространяются по лицензии SIL Open Font License.
+## Шрифты
+
+Oswald и Onest (лицензия SIL Open Font License) взяты из репозитория [google/fonts](https://github.com/google/fonts) и ужаты до одного вариативного файла на гарнитуру:
+
+- `oswald.woff2` — толщины 500–700, 19 КБ;
+- `onest.woff2` — толщины 400–500, 25 КБ.
+
+В файлах оставлены только нужные символы: латиница, кириллица, цифры и знаки вроде «» — № ₽ ×. Раньше было 12 файлов и около 130 КБ, браузер скачивал почти все.
+
+Если на сайте появится символ, которого нет в шрифте, браузер тихо подставит системный. Пересобрать шрифты можно пакетом [subset-font](https://www.npmjs.com/package/subset-font):
+
+```js
+import subsetFont from 'subset-font';
+const text = 'все символы сайта...';
+const woff2 = await subsetFont(fs.readFileSync('Oswald[wght].ttf'), text, {
+  targetFormat: 'woff2',
+  variationAxes: { wght: { min: 500, max: 700 } }
+});
+```
+
+## Производительность и доступность
+
+Замеры на опубликованном сайте, мобильный профиль Lighthouse:
+
+| | Performance | Accessibility | Best Practices | SEO |
+|---|---|---|---|---|
+| Главная | 96+ | 100 | 100 | 100 |
+| Политика | 100 | 100 | 100 | 100 |
+
+Доступность дополнительно проверена axe-core во всех состояниях страницы: открытое меню, шаги записи, ошибки формы, фильтр галереи. Нарушений нет.

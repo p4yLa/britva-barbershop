@@ -84,7 +84,7 @@
     var menu = $('#mobile-menu');
 
     function onScroll() { header.classList.toggle('is-scrolled', window.scrollY > 10); }
-    onScroll();
+    requestAnimationFrame(onScroll); // не читаем вёрстку синхронно при загрузке
     window.addEventListener('scroll', onScroll, { passive: true });
 
     function setMenu(open) {
@@ -185,6 +185,9 @@
         items.forEach(function (el) { if (!el.hidden) first.set(el, el.getBoundingClientRect()); });
 
         items.forEach(function (el) { el.hidden = !(f === 'all' || el.dataset.cat === f); });
+        // Первая видимая работа широкая (на телефоне): так сетка в 2 колонки не оставляет «сироту»
+        var firstVisible = items.find(function (el) { return !el.hidden; });
+        items.forEach(function (el) { el.classList.toggle('is-wide', el === firstVisible); });
         if (reduceMotion) return;
 
         // Last + Invert + Play: сдвигаем элементы из старой позиции в новую
@@ -468,6 +471,7 @@
       $('#sum-master').textContent = masterName();
       $('#sum-date').textContent = state.time ? dayLabel() + ', ' + state.time : '—';
       $('#sum-dur').textContent = sel.length ? duration(totalDur()) : '—';
+      $('#step-total').textContent = sel.length ? (state.master === 'any' || !state.master ? 'от ' : '') + rub(total()) : '';
       $('#sum-total').textContent = sel.length ? (state.master === 'any' || !state.master ? 'от ' : '') + rub(total()) : '—';
       $('#sum-note').textContent = state.master === 'any'
         ? 'Цена «от» — по тарифу барбера. Точную сумму назовём, когда подберём мастера.'
@@ -744,7 +748,7 @@
 
     var t;
     window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(measure, 150); });
-    measure();
+    requestAnimationFrame(measure);
   }
 
   /* ---------- Липкая кнопка «Записаться» ---------- */

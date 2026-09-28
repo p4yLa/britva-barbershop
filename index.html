@@ -28,7 +28,8 @@
   <meta name="twitter:image" content="https://p4yla.github.io/britva-barbershop/img/og.jpg">
 
   <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
-  <link rel="preload" href="fonts/oswald-700-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/oswald.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/onest.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="img/hero-800.webp" as="image" type="image/webp" media="(max-width: 767px)">
   <link rel="preload" href="img/hero-1600.webp" as="image" type="image/webp" media="(min-width: 768px)">
   <link rel="stylesheet" href="css/style.css">
@@ -141,8 +142,8 @@
     </div>
   </header>
 
-  <div class="mobile-menu" id="mobile-menu" hidden>
-    <nav aria-label="Мобильное меню">
+  <nav class="mobile-menu" id="mobile-menu" aria-label="Мобильное меню" hidden>
+    <div>
       <ul>
         <li><a href="#services">Услуги</a></li>
         <li><a href="#masters">Мастера</a></li>
@@ -150,10 +151,10 @@
         <li><a href="#certificate">Сертификаты</a></li>
         <li><a href="#contacts">Контакты</a></li>
       </ul>
-    </nav>
+    </div>
     <a class="mobile-menu__phone" href="tel:+74951284730">+7 (495) 128-47-30</a>
     <a class="btn btn--primary btn--block" href="#booking">Записаться онлайн</a>
-  </div>
+  </nav>
 
   <main id="main">
     <!-- ===== Первый экран ===== -->
@@ -260,7 +261,7 @@
         <ul class="masters">
           <li class="master reveal" data-master="artem" data-name="Артём Карпов" data-level="2" data-photo="img/master-1.webp">
             <div class="master__photo">
-              <img src="img/master-1.webp" width="600" height="750" loading="lazy" alt="Бренд-барбер Артём Карпов, бородатый мужчина в бирюзовой футболке">
+              <img src="img/master-1.webp" srcset="img/master-1-400.webp 400w, img/master-1.webp 600w" sizes="(min-width: 1360px) 230px, (min-width: 1024px) 380px, (min-width: 560px) 45vw, 92vw" width="600" height="750" loading="lazy" alt="Бренд-барбер Артём Карпов, бородатый мужчина в бирюзовой футболке">
               <span class="master__level">Бренд-барбер</span>
             </div>
             <div class="master__body">
@@ -272,7 +273,7 @@
           </li>
           <li class="master reveal" data-delay="1" data-master="denis" data-name="Денис Орлов" data-level="1" data-photo="img/master-2.webp">
             <div class="master__photo">
-              <img src="img/master-2.webp" width="600" height="750" loading="lazy" alt="Топ-барбер Денис Орлов с ножницами в руке, чёрно-белый портрет">
+              <img src="img/master-2.webp" srcset="img/master-2-400.webp 400w, img/master-2.webp 600w" sizes="(min-width: 1360px) 230px, (min-width: 1024px) 380px, (min-width: 560px) 45vw, 92vw" width="600" height="750" loading="lazy" alt="Топ-барбер Денис Орлов с ножницами в руке, чёрно-белый портрет">
               <span class="master__level">Топ-барбер</span>
             </div>
             <div class="master__body">
@@ -284,7 +285,7 @@
           </li>
           <li class="master reveal" data-delay="2" data-master="ruslan" data-name="Руслан Гафаров" data-level="1" data-photo="img/master-4.webp">
             <div class="master__photo">
-              <img src="img/master-4.webp" width="600" height="750" loading="lazy" alt="Топ-барбер Руслан Гафаров за работой в тёмном зале барбершопа">
+              <img src="img/master-4.webp" srcset="img/master-4-400.webp 400w, img/master-4.webp 600w" sizes="(min-width: 1360px) 230px, (min-width: 1024px) 380px, (min-width: 560px) 45vw, 92vw" width="600" height="750" loading="lazy" alt="Топ-барбер Руслан Гафаров за работой в тёмном зале барбершопа">
               <span class="master__level">Топ-барбер</span>
             </div>
             <div class="master__body">
@@ -296,7 +297,7 @@
           </li>
           <li class="master reveal" data-master="ilya" data-name="Илья Соколов" data-level="0" data-photo="img/master-3.webp">
             <div class="master__photo">
-              <img src="img/master-3.webp" width="600" height="750" loading="lazy" alt="Барбер Илья Соколов в кожаной куртке на фоне неоновой вывески «Открыто»">
+              <img src="img/master-3.webp" srcset="img/master-3-400.webp 400w, img/master-3.webp 600w" sizes="(min-width: 1360px) 230px, (min-width: 1024px) 380px, (min-width: 560px) 45vw, 92vw" width="600" height="750" loading="lazy" alt="Барбер Илья Соколов в кожаной куртке на фоне неоновой вывески «Открыто»">
               <span class="master__level">Барбер</span>
             </div>
             <div class="master__body">
@@ -308,7 +309,7 @@
           </li>
           <li class="master reveal" data-delay="1" data-master="maxim" data-name="Максим Белов" data-level="0" data-photo="img/master-5.webp">
             <div class="master__photo">
-              <img src="img/master-5.webp" width="600" height="750" loading="lazy" alt="Барбер Максим Белов с объёмной укладкой и аккуратной бородой">
+              <img src="img/master-5.webp" srcset="img/master-5-400.webp 400w, img/master-5.webp 600w" sizes="(min-width: 1360px) 230px, (min-width: 1024px) 380px, (min-width: 560px) 45vw, 92vw" width="600" height="750" loading="lazy" alt="Барбер Максим Белов с объёмной укладкой и аккуратной бородой">
               <span class="master__level">Барбер</span>
             </div>
             <div class="master__body">
@@ -337,15 +338,15 @@
           <button type="button" data-filter="beard" aria-pressed="false">Борода</button>
         </div>
         <div class="gallery" id="gallery" aria-live="polite">
-          <figure class="gallery__item" data-cat="short"><img src="img/work-1.webp" width="600" height="600" loading="lazy" alt="Короткая стрижка с плавным переходом на висках, вид сбоку"><figcaption><b>Скин-фейд</b>Денис Орлов</figcaption></figure>
-          <figure class="gallery__item" data-cat="classic"><img src="img/work-4.webp" width="600" height="600" loading="lazy" alt="Мастер ножницами оформляет классическую стрижку и бороду"><figcaption><b>Классика + борода</b>Артём Карпов</figcaption></figure>
-          <figure class="gallery__item" data-cat="beard"><img src="img/work-7.webp" width="600" height="600" loading="lazy" alt="Чёрно-белое фото: мастер подравнивает бороду ножницами"><figcaption><b>Форма бороды</b>Руслан Гафаров</figcaption></figure>
-          <figure class="gallery__item" data-cat="short"><img src="img/work-2.webp" width="600" height="600" loading="lazy" alt="Стрижка машинкой: мастер выводит переход на затылке"><figcaption><b>Андеркат</b>Максим Белов</figcaption></figure>
-          <figure class="gallery__item" data-cat="classic"><img src="img/work-5.webp" width="600" height="600" loading="lazy" alt="Мужчина с зачёсанными назад волосами и густой бородой, профиль"><figcaption><b>Помпадур</b>Максим Белов</figcaption></figure>
-          <figure class="gallery__item" data-cat="beard"><img src="img/work-8.webp" width="600" height="600" loading="lazy" alt="Чёрно-белое фото: клиент откинулся в кресле перед бритьём"><figcaption><b>Королевское бритьё</b>Артём Карпов</figcaption></figure>
-          <figure class="gallery__item" data-cat="short"><img src="img/work-3.webp" width="600" height="600" loading="lazy" alt="Мастер стрижёт клиента машинкой, короткий фейд"><figcaption><b>Кроп с фейдом</b>Илья Соколов</figcaption></figure>
-          <figure class="gallery__item" data-cat="classic"><img src="img/work-6.webp" width="600" height="600" loading="lazy" alt="Клиент в полосатой накидке в кресле, барбер стрижёт у зелёной стены с фотографиями"><figcaption><b>Классическая стрижка</b>Денис Орлов</figcaption></figure>
-          <figure class="gallery__item" data-cat="beard"><img src="img/work-9.webp" width="600" height="600" loading="lazy" alt="Мастер работает с бородой клиента в полумраке зала"><figcaption><b>Контур бороды</b>Руслан Гафаров</figcaption></figure>
+          <figure class="gallery__item is-wide" data-cat="short"><img src="img/work-1.webp" srcset="img/work-1-300.webp 300w, img/work-1.webp 600w" sizes="(min-width: 1240px) 390px, (min-width: 768px) 31vw, 48vw" width="600" height="600" loading="lazy" alt="Короткая стрижка с плавным переходом на висках, вид сбоку"><figcaption><b>Скин-фейд</b>Денис Орлов</figcaption></figure>
+          <figure class="gallery__item" data-cat="classic"><img src="img/work-4.webp" srcset="img/work-4-300.webp 300w, img/work-4.webp 600w" sizes="(min-width: 1240px) 390px, (min-width: 768px) 31vw, 48vw" width="600" height="600" loading="lazy" alt="Мастер ножницами оформляет классическую стрижку и бороду"><figcaption><b>Классика + борода</b>Артём Карпов</figcaption></figure>
+          <figure class="gallery__item" data-cat="beard"><img src="img/work-7.webp" srcset="img/work-7-300.webp 300w, img/work-7.webp 600w" sizes="(min-width: 1240px) 390px, (min-width: 768px) 31vw, 48vw" width="600" height="600" loading="lazy" alt="Чёрно-белое фото: мастер подравнивает бороду ножницами"><figcaption><b>Форма бороды</b>Руслан Гафаров</figcaption></figure>
+          <figure class="gallery__item" data-cat="short"><img src="img/work-2.webp" srcset="img/work-2-300.webp 300w, img/work-2.webp 600w" sizes="(min-width: 1240px) 390px, (min-width: 768px) 31vw, 48vw" width="600" height="600" loading="lazy" alt="Стрижка машинкой: мастер выводит переход на затылке"><figcaption><b>Андеркат</b>Максим Белов</figcaption></figure>
+          <figure class="gallery__item" data-cat="classic"><img src="img/work-5.webp" srcset="img/work-5-300.webp 300w, img/work-5.webp 600w" sizes="(min-width: 1240px) 390px, (min-width: 768px) 31vw, 48vw" width="600" height="600" loading="lazy" alt="Мужчина с зачёсанными назад волосами и густой бородой, профиль"><figcaption><b>Помпадур</b>Максим Белов</figcaption></figure>
+          <figure class="gallery__item" data-cat="beard"><img src="img/work-8.webp" srcset="img/work-8-300.webp 300w, img/work-8.webp 600w" sizes="(min-width: 1240px) 390px, (min-width: 768px) 31vw, 48vw" width="600" height="600" loading="lazy" alt="Чёрно-белое фото: клиент откинулся в кресле перед бритьём"><figcaption><b>Королевское бритьё</b>Артём Карпов</figcaption></figure>
+          <figure class="gallery__item" data-cat="short"><img src="img/work-3.webp" srcset="img/work-3-300.webp 300w, img/work-3.webp 600w" sizes="(min-width: 1240px) 390px, (min-width: 768px) 31vw, 48vw" width="600" height="600" loading="lazy" alt="Мастер стрижёт клиента машинкой, короткий фейд"><figcaption><b>Кроп с фейдом</b>Илья Соколов</figcaption></figure>
+          <figure class="gallery__item" data-cat="classic"><img src="img/work-6.webp" srcset="img/work-6-300.webp 300w, img/work-6.webp 600w" sizes="(min-width: 1240px) 390px, (min-width: 768px) 31vw, 48vw" width="600" height="600" loading="lazy" alt="Клиент в полосатой накидке в кресле, барбер стрижёт у зелёной стены с фотографиями"><figcaption><b>Классическая стрижка</b>Денис Орлов</figcaption></figure>
+          <figure class="gallery__item" data-cat="beard"><img src="img/work-9.webp" srcset="img/work-9-300.webp 300w, img/work-9.webp 600w" sizes="(min-width: 1240px) 390px, (min-width: 768px) 31vw, 48vw" width="600" height="600" loading="lazy" alt="Мастер работает с бородой клиента в полумраке зала"><figcaption><b>Контур бороды</b>Руслан Гафаров</figcaption></figure>
         </div>
       </div>
     </section>
@@ -423,6 +424,7 @@
               <button class="btn btn--link" type="button" id="step-back" hidden>
                 <svg aria-hidden="true"><use href="#i-arrow-left"/></svg>Назад
               </button>
+              <span class="step-total" id="step-total" aria-hidden="true"></span>
               <button class="btn btn--primary" type="button" id="step-next">
                 Далее<svg aria-hidden="true"><use href="#i-arrow-right"/></svg>
               </button>
@@ -665,6 +667,8 @@
         </div>
       </div>
     </section>
+    <!-- Липкая кнопка для телефона. Внутри <main>, чтобы скринридеры относили её к содержимому страницы -->
+    <a class="btn btn--primary sticky-cta" id="sticky-cta" href="#booking">Записаться</a>
   </main>
 
   <footer class="footer">
@@ -704,7 +708,6 @@
     </div>
   </footer>
 
-  <a class="btn btn--primary sticky-cta" id="sticky-cta" href="#booking">Записаться</a>
 
   <div class="cookie" id="cookie" role="region" aria-label="Уведомление о cookie" hidden>
     <p>Сайт использует cookie, чтобы запоминать ваши настройки. Подробнее — в <a href="privacy.html">политике конфиденциальности</a>.</p>
