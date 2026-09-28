@@ -2,3 +2,9 @@
 name = "britva-booking"
 main = "index.js"
 compatibility_date = "2026-09-01"
+
+# База записей (Cloudflare D1, SQLite). В коде доступна как env.DB
+[[d1_databases]]
+binding = "DB"
+database_name = "britva"
+database_id = "21219bc2-3390-4cf2-b6c7-b821f1555a2a"

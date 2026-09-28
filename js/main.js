@@ -27,9 +27,13 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     }).then(function (r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json().catch(function () { return {}; }).then(function (json) {
+        if (!r.ok) { var e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
+        return json;
+      });
     }).catch(function (err) {
-      errorEl.textContent = 'Не получилось отправить заявку. Проверьте интернет или позвоните: +7 (495) 128-47-30.';
+      // 409 — время заняли, это обрабатывает сама форма записи
+      if (err.status !== 409) errorEl.textContent = 'Не получилось отправить заявку. Проверьте интернет или позвоните: +7 (495) 128-47-30.';
       throw err;
     }).finally(function () {
       button.disabled = false;
@@ -357,19 +361,60 @@
       });
     }
 
-    // Слот занят? Считаем от даты + мастера, поэтому после перезагрузки картина та же
+    /* Свободное время.
+       С сервером: берём расписание из базы (GET /slots) — оно учитывает реальные записи
+       и длительность выбранных услуг. Без сервера (демо): считаем занятость по формуле. */
+    var slotCache = {};     // ключ «мастер|услуги» -> { '2026-10-14': ['10:00', ...] }
+    var slotsState = 'idle'; // idle / loading / error
+
+    function slotKey() { return state.master + '|' + state.services.slice().sort().join(','); }
+
+    function loadSlots() {
+      var key = slotKey();
+      if (slotCache[key]) return Promise.resolve();
+      slotsState = 'loading';
+      var url = LEAD_ENDPOINT + '/slots?master=' + encodeURIComponent(state.master) +
+        '&services=' + encodeURIComponent(state.services.join(','));
+      return fetch(url, { cache: 'no-store' }).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }).then(function (json) {
+        var map = {};
+        json.days.forEach(function (d) { map[d.date] = d.free; });
+        slotCache[key] = map;
+        slotsState = 'idle';
+      }).catch(function () { slotsState = 'error'; });
+    }
+
     function isBusy(dayKey, hour, masterId) {
       var chance = DAYS[0].key === dayKey ? 30 : 38; // вечером и в выходные занято чаще
       if (hour >= 18) chance += 15;
       return hash(dayKey + '|' + hour + '|' + masterId) % 100 < chance;
     }
     function slotFree(day, hour) {
+      if (LEAD_ENDPOINT) {
+        var map = slotCache[slotKey()];
+        return !!map && (map[day.key] || []).indexOf(pad(hour) + ':00') > -1;
+      }
       if (day.today && hour * 60 <= now.h * 60 + now.min + 30) return false; // прошло или меньше 30 минут до начала
       if (state.master && state.master !== 'any') return !isBusy(day.key, hour, state.master);
       return MASTERS.some(function (m) { return !isBusy(day.key, hour, m.id); });
     }
 
     function renderDates() {
+      if (LEAD_ENDPOINT && !slotCache[slotKey()]) {
+        datesBox.innerHTML = '';
+        $('#slots-label').textContent = '';
+        if (slotsState === 'error') {
+          slotsState = 'idle';
+          slotsBox.innerHTML = '<p class="slots-empty">Не удалось загрузить расписание. <button type="button" class="btn btn--link" id="slots-retry">Попробовать ещё раз</button> или позвоните: <a href="tel:+74951284730">+7 (495) 128-47-30</a>.</p>';
+          $('#slots-retry').addEventListener('click', renderDates);
+          return;
+        }
+        slotsBox.innerHTML = '<p class="slots-empty" role="status">Загружаем свободное время…</p>';
+        loadSlots().then(renderDates);
+        return;
+      }
       if (!state.date) {
         // По умолчанию — первый день, где есть свободное время
         var first = DAYS.find(function (d) { return SLOT_HOURS.some(function (h) { return slotFree(d, h); }); });
@@ -474,24 +519,41 @@
       if (!validateAll(steps[3])) return;
       var name = $('#b-name').value.trim();
       var phone = $('#b-phone').value;
+      // Отправляем коды услуг и мастера: цену и длительность сервер посчитает сам
       sendLead(form, {
         type: 'booking',
-        services: selected().map(function (s) { return s.name; }).join(', '),
-        master: masterName(),
-        date: dayLabel(),
+        services: state.services,
+        master: state.master,
+        date: state.date,
         time: state.time,
-        duration: duration(totalDur()),
-        total: $('#sum-total').textContent,
         name: name,
         phone: phone,
         comment: $('#b-comment').value,
         consent: true
-      }, btnSubmit, errorBox).then(function () { showBookingSuccess(name, phone); }, function () {});
+      }, btnSubmit, errorBox).then(function (res) {
+        // Для «Любого свободного» сервер сообщает, какой мастер назначен
+        if (res && res.master) {
+          state.assigned = res.master;
+          $('#sum-master').textContent = res.master.name + ' · ' + LEVEL_NAMES[res.master.level];
+          $('#sum-total').textContent = rub(res.total);
+          $('#sum-note').textContent = 'Номер записи: ' + res.id + '. Оплата после визита картой, по СБП или наличными.';
+        }
+        showBookingSuccess(name, phone);
+      }, function (err) {
+        if (err.status !== 409) return;
+        // Время заняли, пока человек заполнял форму: обновляем расписание и возвращаем на шаг 3
+        delete slotCache[slotKey()];
+        state.time = null;
+        goTo(3, true);
+        errorBox.textContent = 'Это время только что заняли. Выберите другое — расписание обновлено.';
+        renderSummary();
+      });
     });
 
     function showBookingSuccess(name, phone) {
+      var who = state.assigned ? state.assigned.name : (state.master === 'any' ? '' : masterName().split(' · ')[0]);
       $('#booking-success-text').textContent = name + ', ждём вас ' + dayLabel() + ' в ' + state.time +
-        ' на Покровке, 31. ' + (state.master === 'any' ? 'Мастера подберём и назовём при звонке. ' : 'Мастер: ' + masterName().split(' · ')[0] + '. ') +
+        ' на Покровке, 31. ' + (who ? 'Мастер: ' + who + '. ' : 'Мастера подберём и назовём при звонке. ') +
         'Администратор позвонит на ' + phone + ' в течение 15 минут.';
       $$('.step, .step-nav, .progress, #step-error', form).forEach(function (el) { el.hidden = true; });
       var ok = $('#booking-success');
@@ -506,7 +568,8 @@
       var start = new Date(Date.UTC(p[0], p[1] - 1, p[2], h - 3, 0));
       var end = new Date(start.getTime() + totalDur() * 60000);
       var fmt = function (d) { return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); };
-      var desc = selected().map(function (s) { return s.name; }).join(', ') + '. ' + masterName() + '. Телефон: +7 (495) 128-47-30';
+      var who = state.assigned ? state.assigned.name + ' · ' + LEVEL_NAMES[state.assigned.level] : masterName();
+      var desc = selected().map(function (s) { return s.name; }).join(', ') + '. ' + who + '. Телефон: +7 (495) 128-47-30';
       var ics = [
         'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Britva Barbershop//RU', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
         'BEGIN:VEVENT',
@@ -532,6 +595,7 @@
       $$('.field, .consent', form).forEach(function (w) { w.classList.remove('is-invalid', 'is-valid'); });
       $$('[data-touched]', form).forEach(function (el) { delete el.dataset.touched; });
       state = { step: 1, services: [], master: null, date: null, time: null };
+      slotCache = {}; // после записи расписание изменилось
       $('#booking-success').hidden = true;
       $$('.step-nav, .progress, #step-error', form).forEach(function (el) { el.hidden = false; });
       goTo(1, true);
